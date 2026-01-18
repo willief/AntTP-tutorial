@@ -1,68 +1,70 @@
+version: '3.8'
+
 services:
-  # AntTP - Autonomi HTTP Proxy
+  # AntTP Service
   anttp:
-    image: traktion/anttp:latest
+    image: traktion/anttp:v0.22.4
     container_name: anttp
-    ports:
-      - "18888:18888"
-    command: >
-      /usr/local/bin/anttp
-      --listen-address 0.0.0.0:18888
-      --download-threads 8
-      --immutable-memory-cache-size 64
-      --immutable-disk-cache-size 2048
-      --cached-mutable-ttl 10
-    networks:
-      - autonomi-net
     restart: unless-stopped
-    volumes:
-      - anttp-cache:/tmp/anttp/cache
-
-  # Python FastAPI Backend
-  backend:
-    build:
-      context: ./backend
-      dockerfile: Dockerfile
-    container_name: autonomi-backend
-    ports:
-      - "8000:8000"
+    
+    # OPTION A: Host network (recommended)
+    network_mode: "host"
+    
+    # OPTION B: Bridge network with DNS fix
+    # networks:
+    #   - anttp-network
+    # ports:
+    #   - "18888:8080"
+    
     environment:
-      - ANTTP_BASE_URL=http://anttp:18888
-      - PYTHONUNBUFFERED=1
-      - LOG_LEVEL=INFO
-    depends_on:
-      - anttp
-    networks:
-      - autonomi-net
-    volumes:
-      - ./backend:/app
-    command: uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-    restart: unless-stopped
+      # Logging
+      - RUST_LOG=info
+      - RUST_BACKTRACE=1
+      
+      # Network settings
+      - ANTP_BIND_ADDRESS=0.0.0.0:18888
+      - ANTP_CONNECTION_TIMEOUT=15
+      - ANTP_BOOTSTRAP_TIMEOUT=10
+      
+      # Bootstrap configuration  
+      - ANTP_BOOTSTRAP_MODE=auto
+      - ANTP_ENABLE_PEER_DISCOVERY=true
+      
+      # Wallet (generate a test key)
+      - ANTP_WALLET_PRIVATE_KEY=${ANTP_WALLET_KEY:-test-key-12345}
+      
+      # Debug
+      - ANTP_NETWORK_DEBUG=true
+      - ANTP_LOG_NETWORK_TRAFFIC=true
+    
+    # Health check
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:18888/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 40s
+    
+    # Run with proper permissions
+    user: "1000:1000"
+    
+    # Add capabilities if needed
+    cap_add:
+      - NET_ADMIN
+      - NET_RAW
+    
+    # Optional: Add sysctls for network tuning
+    sysctls:
+      - net.core.somaxconn=1024
+      - net.ipv4.tcp_syncookies=0
 
-  # SvelteKit Frontend
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile
-    container_name: autonomi-frontend
-    ports:
-      - "5173:5173"
-    environment:
-      - VITE_API_BASE_URL=http://localhost:8000/api/v1
-      - VITE_ANTTP_BASE_URL=http://localhost:18888
-    depends_on:
-      - backend
-    networks:
-      - autonomi-net
-    volumes:
-      - ./frontend:/app
-      - /app/node_modules
-    command: npm run dev -- --host 0.0.0.0 --port 5173
-    restart: unless-stopped
-
+# Networks (if not using host mode)
 networks:
-  autonomi-net:
+  anttp-network:
     driver: bridge
+    ipam:
+      config:
+        - subnet: 172.20.0.0/16
+    driver_opts:
+      com.docker.network.bridge.name: br-anttp
 
-volumes:
-  anttp-cache:

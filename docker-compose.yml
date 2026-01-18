@@ -1,70 +1,35 @@
 version: '3.8'
-
 services:
   # AntTP Service
   anttp:
-    image: traktion/anttp:v0.22.4
+    image: traktion/anttp:latest
     container_name: anttp
     restart: unless-stopped
     
-    # OPTION A: Host network (recommended)
+    # OPTION 1: Host network (recommended for network access)
     network_mode: "host"
     
-    # OPTION B: Bridge network with DNS fix
-    # networks:
-    #   - anttp-network
-    # ports:
-    #   - "18888:8080"
-    
     environment:
+      # Bind to port 18888
+      - ANTP_BIND_ADDRESS=0.0.0.0:18888
+      
       # Logging
       - RUST_LOG=info
       - RUST_BACKTRACE=1
       
+      # Test wallet key (DO NOT USE IN PRODUCTION)
+      - ANTP_WALLET_PRIVATE_KEY=0000000000000000000000000000000000000000000000000000000000000000
+      
       # Network settings
-      - ANTP_BIND_ADDRESS=0.0.0.0:18888
-      - ANTP_CONNECTION_TIMEOUT=15
+      - ANTP_CONNECTION_TIMEOUT=10
       - ANTP_BOOTSTRAP_TIMEOUT=10
-      
-      # Bootstrap configuration  
-      - ANTP_BOOTSTRAP_MODE=auto
-      - ANTP_ENABLE_PEER_DISCOVERY=true
-      
-      # Wallet (generate a test key)
-      - ANTP_WALLET_PRIVATE_KEY=${ANTP_WALLET_KEY:-test-key-12345}
-      
-      # Debug
-      - ANTP_NETWORK_DEBUG=true
-      - ANTP_LOG_NETWORK_TRAFFIC=true
     
-    # Health check
+    # No ports needed with host network
+    
+    # Optional: Add health check
     healthcheck:
       test: ["CMD", "curl", "-f", "http://localhost:18888/health"]
       interval: 30s
       timeout: 10s
       retries: 3
-      start_period: 40s
-    
-    # Run with proper permissions
-    user: "1000:1000"
-    
-    # Add capabilities if needed
-    cap_add:
-      - NET_ADMIN
-      - NET_RAW
-    
-    # Optional: Add sysctls for network tuning
-    sysctls:
-      - net.core.somaxconn=1024
-      - net.ipv4.tcp_syncookies=0
-
-# Networks (if not using host mode)
-networks:
-  anttp-network:
-    driver: bridge
-    ipam:
-      config:
-        - subnet: 172.20.0.0/16
-    driver_opts:
-      com.docker.network.bridge.name: br-anttp
-
+      start_period: 60s

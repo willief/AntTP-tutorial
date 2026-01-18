@@ -44,6 +44,7 @@ All AntTP operations support three storage types:
 ### Creating a Chunk
 
 **Via UI:**
+
 1. Navigate to `/chunks`
 2. Enter text content
 3. Select storage type
@@ -51,6 +52,7 @@ All AntTP operations support three storage types:
 5. Copy the returned address
 
 **Via API:**
+
 ```bash
 # Base64 encode your content
 echo -n "Hello Autonomi" | base64  # SGVsbG8gQXV0b25vbWk=

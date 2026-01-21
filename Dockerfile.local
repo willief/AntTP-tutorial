@@ -1,0 +1,6 @@
+FROM debian:bookworm-slim
+RUN apt-get update && apt-get install -y ca-certificates libssl3
+WORKDIR /app
+COPY target/release/autonomi-rust-backend /app/
+EXPOSE 8000
+CMD ["/app/autonomi-rust-backend"]

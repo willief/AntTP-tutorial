@@ -1,0 +1,11 @@
+{
+	"folders": [
+		{
+			"path": "."
+		},
+		{
+			"path": "../autonomi-rust-backend"
+		}
+	],
+	"settings": {}
+}

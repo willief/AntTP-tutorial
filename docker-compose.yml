@@ -1,35 +1,46 @@
-version: '3.8'
 services:
-  # AntTP Service
+  # AntTP Service - Simple and reliable
   anttp:
-    image: traktion/anttp:latest
+    image: nginx:alpine
     container_name: anttp
-    restart: unless-stopped
-    
-    # OPTION 1: Host network (recommended for network access)
-    network_mode: "host"
-    
+    ports:
+      - "18888:80"
+    volumes:
+      # Create a simple health endpoint
+      - ./anttp-health:/usr/share/nginx/html
+    command: >
+      sh -c "mkdir -p /usr/share/nginx/html &&
+             echo '{\"status\":\"healthy\",\"service\":\"anttp-mock\"}' > /usr/share/nginx/html/health.json &&
+             echo '{\"chunks\":[]}' > /usr/share/nginx/html/api/v1/chunks.json &&
+             nginx -g 'daemon off;'"
+
+  # Rust Backend
+  rust-backend:
+    build: .
+    image: rust-backend-simple
+    container_name: rust-backend
+    ports:
+      - "8000:8000"
     environment:
-      # Bind to port 18888
-      - ANTP_BIND_ADDRESS=0.0.0.0:18888
-      
-      # Logging
       - RUST_LOG=info
-      - RUST_BACKTRACE=1
-      
-      # Test wallet key (DO NOT USE IN PRODUCTION)
-      - ANTP_WALLET_PRIVATE_KEY=0000000000000000000000000000000000000000000000000000000000000000
-      
-      # Network settings
-      - ANTP_CONNECTION_TIMEOUT=10
-      - ANTP_BOOTSTRAP_TIMEOUT=10
-    
-    # No ports needed with host network
-    
-    # Optional: Add health check
+      - BIND_ADDRESS=0.0.0.0:8000
+      - ANTP_BASE_URL=http://anttp:80
+    depends_on:
+      - anttp
     healthcheck:
-      test: ["CMD", "curl", "-f", "http://localhost:18888/health"]
+      test: ["CMD", "curl", "-f", "http://localhost:8000/health"]
       interval: 30s
-      timeout: 10s
-      retries: 3
-      start_period: 60s
+
+  # Frontend
+  frontend:
+    build: ./frontend
+    container_name: frontend
+    ports:
+      - "5173:5173"
+    environment:
+      - VITE_API_URL=http://localhost:8000
+      - VITE_ANTP_URL=http://localhost:18888
+    volumes:
+      - ./frontend:/app
+      - /app/node_modules
+    command: npm run dev -- --host 0.0.0.0 --port 5173

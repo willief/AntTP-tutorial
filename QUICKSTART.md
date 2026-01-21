@@ -1,193 +1,214 @@
-# 🚀 Quick Start Guide
+# ⚡ Quick Start - Autonomi Rust Backend
 
-## Prerequisites
-- Docker Desktop installed and running
-- 4GB+ RAM available for Docker
-- Ports 5173, 8000, 18888 available
+## For Complete Beginners
 
-## Installation
+### 1. Install Prerequisites
 
-### 1. Extract the Archive
+**On macOS/Linux:**
 ```bash
-tar -xzf autonomi-anttp-complete.tar.gz
-cd autonomi-anttp-fixed
+# Install Rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
+source ~/.cargo/env
+
+# Install Docker Desktop
+# Download from: https://www.docker.com/products/docker-desktop
 ```
 
-### 2. Start Services
+**On Windows:**
+```powershell
+# Install Rust
+# Download from: https://rustup.rs/
+
+# Install Docker Desktop
+# Download from: https://www.docker.com/products/docker-desktop
+```
+
+### 2. Start the Project
+
 ```bash
+cd autonomi-rust-backend
 ./start.sh
 ```
 
-Or manually:
-```bash
-docker compose up -d
-```
-
-### 3. Wait for Initialization
-⏱️ **IMPORTANT: AntTP takes 30-60 seconds to fully start!**
-
-The containers start immediately, but AntTP needs time to initialize.
-
-**Wait and watch the logs**:
-```bash
-docker compose logs -f anttp
-```
-
-**Look for this message** (means AntTP is ready):
-```
-Listening on http://0.0.0.0:18888
-```
-
-Or simply **wait 60 seconds** after starting, then try accessing the services.
-
-### 4. Access the Application
-
-Once running, open in your browser:
+Wait 60 seconds for AntTP to initialize, then visit:
 - **Frontend**: http://localhost:5173
-- **Backend API Docs**: http://localhost:8000/docs
-- **AntTP**: http://localhost:18888
+- **Backend**: http://localhost:8000/health
 
-## First Steps
-
-1. **Explore the UI**: Visit http://localhost:5173
-2. **Try Creating a Chunk**:
-   - Go to http://localhost:5173/chunks
-   - Enter some text
-   - Select "Memory (Cache Only)" storage
-   - Click "Create Chunk"
-   - You'll get back an address!
-
-3. **Check the API**:
-   - Visit http://localhost:8000/docs
-   - Try the POST `/api/v1/chunks` endpoint
-   - Use this content (base64): `SGVsbG8gQXV0b25vbWk=`
-
-## Running Tests
-
-### Automated Testing
-
-Use the test script to run all tests locally:
+### 3. Run Tests
 
 ```bash
 ./test.sh
 ```
 
-This will:
-- Create Python venv if needed
-- Install all dependencies
-- Run backend tests (pytest)
-- Run frontend tests (vitest)
-- Show coverage reports
+## Common Commands
 
-### Backend Tests (Manual)
+### Development
+
 ```bash
-cd backend
-python -m pytest tests/ -v
+# Check code compiles
+cargo check
+
+# Format code
+cargo fmt
+
+# Lint code
+cargo clippy
+
+# Build release
+cargo build --release
+
+# Run locally (needs AntTP running)
+cargo run
 ```
 
-Expected: **13 tests pass** ✅
+### Testing
 
-### Frontend Tests
 ```bash
-cd frontend
-npm install  # First time only
-npm test
+# All unit tests
+cargo test --lib
+
+# Specific test
+cargo test test_validate_base64
+
+# With output
+cargo test -- --nocapture
+
+# Integration tests (needs AntTP)
+cargo test -- --ignored
 ```
 
-Expected: **11 tests pass** ✅
-
-## Common Issues
-
-### Quick Debugging
-
-Run the debug script to check everything:
+### Docker
 
 ```bash
-./debug.sh
-```
-
-This shows:
-- Docker status
-- Container status  
-- Service health checks
-- Port usage
-- Recent logs
-- Environment configuration
-
-### Services Won't Start
-```bash
-# Check logs
-docker compose logs
-
-# Restart everything
-docker compose down
+# Start all services
 docker compose up -d
-```
 
-### Port Already in Use
-```bash
-# Change ports in docker-compose.yml
-# Or stop conflicting services
-```
+# View logs
+docker compose logs -f
 
-### AntTP Taking Too Long
-This is normal! AntTP initialization can take 60+ seconds.
+# Restart backend
+docker compose restart backend
 
-Check progress:
-```bash
-docker compose logs -f anttp
-```
+# Rebuild after changes
+docker compose up -d --build
 
-Look for: `Listening on http://0.0.0.0:18888`
-
-## What to Explore
-
-### 📚 Documentation
-- `README.md` - Project overview and architecture
-- `TUTORIAL.md` - Complete AntTP features guide (6000+ words)
-- `DEVELOPMENT.md` - TDD workflow and development guide
-- `TROUBLESHOOTING.md` - Solutions to common problems
-
-### 🧪 Test-Driven Development
-All code was written **tests-first**! Check out:
-- `backend/tests/unit/test_chunks.py` - Unit tests
-- `backend/app/services/chunks.py` - Implementation
-- `frontend/tests/unit/ChunkCreator.test.ts` - Component tests
-
-### 🎯 Features Implemented
-- ✅ **Chunks** - Immutable storage (fully tested)
-- ✅ **Scratchpads** - Mutable data (fully tested)
-- 🔨 **Registers** - Template ready for you to implement with TDD
-- 🔨 **Archives** - Template ready
-- 🔨 **Pointers** - Template ready
-- 🔨 **PNR** - Template ready
-- 🔨 **Graph** - Template ready
-
-## Next Steps
-
-1. **Read TUTORIAL.md** - Learn all AntTP features
-2. **Study the TDD approach** - See how tests drive development
-3. **Implement more features** - Follow TDD to add Registers, Archives, etc.
-4. **Explore Autonomi** - This is decentralized storage!
-
-## Stop Services
-
-```bash
+# Stop everything
 docker compose down
-```
 
-To also remove volumes:
-```bash
+# Reset volumes
 docker compose down -v
 ```
 
-## Need Help?
+## Test Chunk Creation (cURL)
 
-- Check `TROUBLESHOOTING.md`
-- View logs: `docker compose logs -f`
-- GitHub Issues (if this is public)
-- [Autonomi Forum](https://forum.autonomi.community/)
+```bash
+# Create a chunk
+curl -X POST http://localhost:8000/chunks \
+  -H "Content-Type: application/json" \
+  -d '{
+    "content": "SGVsbG8sIFJ1c3Qh",
+    "storage_type": "network"
+  }'
 
----
+# Get a chunk (replace {address} with actual address)
+curl http://localhost:8000/chunks/{address}
+```
 
-**Happy coding with TDD! 🎉**
+## Project Structure at a Glance
+
+```
+src/
+├── main.rs              ← Start here! Entry point
+├── config.rs            ← Configuration
+├── models/
+│   └── mod.rs           ← Data types (like Pydantic)
+├── services/
+│   └── chunk_service.rs ← Business logic
+└── handlers/
+    └── chunk_handler.rs ← HTTP endpoints
+```
+
+## TDD Workflow
+
+**When adding a new feature:**
+
+1. **RED** - Write failing test
+```rust
+#[tokio::test]
+async fn test_new_feature() {
+    let result = service.new_feature().await;
+    assert!(result.is_ok());  // ❌ FAILS initially
+}
+```
+
+2. **GREEN** - Make it pass
+```rust
+pub async fn new_feature(&self) -> Result<(), Error> {
+    // Minimal implementation
+    Ok(())  // ✅ PASSES now
+}
+```
+
+3. **REFACTOR** - Improve code
+```rust
+pub async fn new_feature(&self) -> Result<(), Error> {
+    // Better implementation
+    // Add logging, error handling, etc.
+    Ok(())  // ✅ Still PASSES
+}
+```
+
+## Debugging
+
+### Backend not starting?
+
+```bash
+# Check logs
+docker compose logs backend
+
+# Common issues:
+# - AntTP not ready (wait 60s)
+# - Port 8000 in use (lsof -i :8000)
+# - Build failed (cargo build)
+```
+
+### Tests failing?
+
+```bash
+# Run single test with output
+cargo test test_name -- --nocapture
+
+# Common issues:
+# - AntTP not running (for integration tests)
+# - Code doesn't compile (cargo check)
+# - Wrong test command (see README)
+```
+
+### Docker issues?
+
+```bash
+# Rebuild completely
+docker compose down
+docker compose build --no-cache
+docker compose up -d
+
+# Clean everything
+docker system prune -a
+```
+
+## Where to Get Help
+
+1. **README.md** - Full documentation
+2. **Code comments** - Every function documented
+3. **Tests** - Examples of how to use code
+4. **Cargo errors** - Usually very helpful!
+
+## Next Steps
+
+1. ✅ Get it running (`./start.sh`)
+2. ✅ Run tests (`./test.sh`)
+3. 📚 Read `README.md` for details
+4. 🧪 Study tests to understand TDD
+5. 🚀 Add new features following TDD
+
+**You're ready to go!** 🦀

@@ -1,0 +1,7 @@
+{
+  "status": "healthy",
+  "service": "anttp-mock",
+  "version": "0.22.4-mock",
+  "network_status": "connected",
+  "peer_count": 42
+}

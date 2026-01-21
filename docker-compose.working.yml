@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  anttp:
+    image: traktion/anttp:latest
+    container_name: anttp
+    network_mode: "host"  # This worked before!
+    environment:
+      - RUST_LOG=debug
+      - RUST_BACKTRACE=full
+      - ANTP_BIND_ADDRESS=0.0.0.0:18888  # Changed from 8080
+      - ANTP_WALLET_PRIVATE_KEY=test-key-development-only-12345
+      - ANTP_CONNECTION_TIMEOUT=5
+      - ANTP_BOOTSTRAP_TIMEOUT=5

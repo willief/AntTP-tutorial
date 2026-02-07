@@ -1,0 +1,17 @@
+{
+  "name": "anttp-tutorial-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "scripts": {
+    "dev": "vite dev",
+    "build": "vite build",
+    "preview": "vite preview"
+  },
+  "devDependencies": {
+    "@sveltejs/adapter-node": "^1.3.1",
+    "@sveltejs/kit": "^1.30.0",
+    "svelte": "^4.2.0",
+    "vite": "^4.5.0"
+  },
+  "type": "module"
+}

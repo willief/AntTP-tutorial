@@ -1,7 +1,7 @@
 <script>
   import { onMount } from 'svelte';
   
-  let archiveType = 'public'; // 'public' or 'tarchive'
+  let archiveType = 'tarchive'; // Default to tarchive for this page
   let archiveName = '';
   let files = [{ path: '', content: '' }];
   let metadata = { author: '', version: '', description: '' };
@@ -136,9 +136,9 @@
 
 <div class="page">
   <div class="page-header">
-    <h1>📦 Public Archives</h1>
-    <p>Standard file collections for websites and applications</p>
-    <a href="/archives/compare" class="compare-link">Compare with TArchives →</a>
+    <h1>⚡ TArchives</h1>
+    <p>Tar-based archives optimized for many small files</p>
+    <a href="/archives/compare" class="compare-link">Compare with Public Archives →</a>
   </div>
 
   {#if error}

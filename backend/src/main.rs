@@ -48,6 +48,7 @@ struct PointerData {
 #[derive(Debug, Serialize, Deserialize, Clone)]
 struct ArchiveData {
     name: String,
+    archive_type: String, // "public" or "tarchive"
     files: Vec<ArchiveFile>,
     metadata: HashMap<String, String>,
     address: String,
@@ -99,6 +100,8 @@ struct PointerRequest {
 #[derive(Debug, Deserialize)]
 struct ArchiveRequest {
     name: String,
+    #[serde(rename = "type")]
+    archive_type: Option<String>, // "public" or "tarchive"
     files: Vec<ArchiveFileRequest>,
     metadata: Option<HashMap<String, String>>,
 }
@@ -424,7 +427,9 @@ async fn create_archive(
     data: web::Data<AppState>,
     req: web::Json<ArchiveRequest>,
 ) -> impl Responder {
-    let address = generate_address("archive");
+    let archive_type = req.archive_type.clone().unwrap_or_else(|| "public".to_string());
+    let address = generate_address(&format!("{}archive", 
+        if archive_type == "tarchive" { "t" } else { "" }));
     
     let files: Vec<ArchiveFile> = req.files.iter().map(|f| {
         ArchiveFile {
@@ -436,6 +441,7 @@ async fn create_archive(
     
     let archive = ArchiveData {
         name: req.name.clone(),
+        archive_type: archive_type.clone(),
         files,
         metadata: req.metadata.clone().unwrap_or_default(),
         address: address.clone(),
@@ -446,7 +452,8 @@ async fn create_archive(
     HttpResponse::Ok().json(serde_json::json!({
         "success": true,
         "archive": archive,
-        "message": "Archive created successfully"
+        "message": format!("{} created successfully", 
+            if archive_type == "tarchive" { "TArchive" } else { "Public Archive" })
     }))
 }
 

@@ -193,6 +193,110 @@ cat output.txt
 - [ ] Add network troubleshooting guide
 - [ ] Create video tutorials
 
+### 2.6: MCP (Model Context Protocol) Integration (2-3 weeks)
+
+**Objective**: Enable LLM agents to interact with Autonomi via standardized protocol
+
+**Background:**
+The AntTP project now includes MCP support, allowing AI agents (Claude, ChatGPT, etc.) to interface with the Autonomi Network through a standardized protocol. This opens powerful agentic workflows where LLMs can create, retrieve, and manage data on the network.
+
+**What is MCP?**
+- Open standard by Anthropic (Nov 2024)
+- "USB-C for AI applications"
+- Standardizes LLM ↔ External Systems communication
+- Enables tool use, context retrieval, and dynamic data access
+- Supported by Claude, ChatGPT, IDEs (Cursor, Zed, Replit)
+
+**Implementation Tasks:**
+- [ ] Study AntTP's MCP implementation (reference implementation)
+- [ ] Create MCP server exposing all 6 primitives as tools
+- [ ] Define tool schemas for each primitive
+- [ ] Implement prompt templates for common operations
+- [ ] Add resource providers for listing stored data
+- [ ] Support both STDIO and HTTP+SSE transports
+- [ ] Add authentication/authorization layer
+- [ ] Test with Claude Desktop app
+- [ ] Test with other MCP clients
+
+**MCP Tools to Expose:**
+
+```typescript
+// Chunks
+- store_chunk(content: string) → ChunkAddress
+- retrieve_chunk(address: string) → Content
+- list_chunks() → ChunkAddress[]
+
+// Files  
+- upload_file(name: string, content: string, type: string) → DataMapAddress
+- download_file(address: string) → FileContent
+- list_files() → FileMetadata[]
+
+// Registers
+- create_register(key: string, value: string) → RegisterAddress
+- update_register(key: string, value: string) → Version
+- get_register(key: string) → RegisterValue
+- list_registers() → RegisterInfo[]
+
+// Pointers
+- create_pointer(name: string, target: string) → PointerAddress
+- update_pointer(name: string, target: string) → Counter
+- resolve_pointer(name: string) → TargetAddress
+- list_pointers() → PointerInfo[]
+
+// Archives
+- create_archive(name: string, files: File[]) → ArchiveAddress
+- list_archive_files(address: string) → FileList
+- download_archive_file(address: string, path: string) → Content
+
+// PNR
+- create_name(name: string, target: string, type: string) → PnrAddress
+- resolve_name(name: string) → TargetAddress
+- list_names() → NameMapping[]
+```
+
+**Example MCP Workflows:**
+
+1. **AI Agent Website Deployment:**
+```
+User: "Create a website with home page and about page, deploy to Autonomi"
+Agent: [calls create_archive with HTML files]
+Agent: [calls create_pointer to archive]
+Agent: [calls create_name "mysite" → pointer]
+Response: "Site deployed at mysite.antp (via PNR)"
+```
+
+2. **Data Management:**
+```
+User: "Store my notes for later retrieval"
+Agent: [calls upload_file with notes]
+Agent: [calls create_name "my-notes" → file address]
+Response: "Notes saved and accessible via 'my-notes'"
+```
+
+3. **Version Control:**
+```
+User: "Update my website with new content"
+Agent: [calls create_archive with new version]
+Agent: [calls update_pointer to new archive]
+Response: "Website updated, version counter incremented"
+```
+
+**Benefits:**
+- ✅ LLMs can create/manage Autonomi data
+- ✅ Natural language interface to all primitives
+- ✅ Agentic workflows (multi-step operations)
+- ✅ Integration with AI coding assistants
+- ✅ Automated data organization
+- ✅ Voice-controlled network operations
+
+**Deliverables:**
+- MCP server implementation
+- Tool definitions and schemas
+- Prompt templates library
+- Claude Desktop integration guide
+- Example agentic workflows
+- Security best practices guide
+
 ## Phase 3: Advanced Features (Future)
 
 ### 3.1: Multi-Network Support
@@ -264,7 +368,8 @@ cat output.txt
 | 2.3 Testing | 1-2 weeks | 20-40 hours |
 | 2.4 Payment Integration | 2 weeks | 40 hours |
 | 2.5 Documentation | 1 week | 20 hours |
-| **Total Phase 2** | **10-14 weeks** | **200-260 hours** |
+| 2.6 MCP Integration | 2-3 weeks | 40-60 hours |
+| **Total Phase 2** | **12-17 weeks** | **240-320 hours** |
 
 ## Success Criteria
 
@@ -272,6 +377,8 @@ cat output.txt
 - ✅ All 6 primitives store data on real network
 - ✅ Data retrievable with `ant` CLI tools
 - ✅ Payment integration working
+- ✅ MCP server exposing all primitives as tools
+- ✅ Tested with Claude Desktop and other MCP clients
 - ✅ Comprehensive tests passing
 - ✅ Documentation updated
 - ✅ Demo video created

@@ -9,6 +9,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Planned
 - Phase 2: Real Autonomi Network integration (see ROADMAP.md)
+  - Autonomi SDK integration
+  - Real XOR addressing and self-encryption  
+  - EVM payment handling
+  - CLI tool compatibility
+  - **MCP (Model Context Protocol) server** - Enable AI agents to interact with network
 - Video tutorials
 - Dark mode support
 - Enhanced error messages

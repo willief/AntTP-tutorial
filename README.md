@@ -172,6 +172,37 @@ Expected output: `Passed: 30+, Failed: 0`
 | Mock addresses | Real XOR addresses |
 | No encryption | Self-encryption |
 
+### 🤖 MCP (Model Context Protocol) Integration
+
+Phase 2 will include **MCP support**, enabling AI agents (Claude, ChatGPT) to interact with Autonomi:
+
+**What is MCP?**
+- Open standard by Anthropic (Nov 2024)
+- "USB-C for AI applications" - universal AI ↔ tools protocol
+- Already implemented in production AntTP
+- Supported by Claude, ChatGPT, IDEs (Cursor, Zed, Replit)
+
+**Example Agentic Workflow:**
+```
+You: "Create a website and deploy it with a friendly name"
+
+Claude (via MCP):
+1. create_archive(files) → archive_abc123
+2. create_pointer("current-site", archive_abc123) → pointer_xyz789
+3. create_name("mysite", pointer_xyz789) → success
+
+Response: "Website deployed! Access it via 'mysite' PNR"
+```
+
+**Benefits:**
+- Natural language interface to all 6 primitives
+- Multi-step automated workflows
+- AI coding assistants can manage network data
+- Voice-controlled operations
+- Reduced learning curve for developers
+
+See [ROADMAP.md](ROADMAP.md) Section 2.6 for detailed MCP integration plans.
+
 ## 🛠️ Development
 
 ### Run in Development Mode
